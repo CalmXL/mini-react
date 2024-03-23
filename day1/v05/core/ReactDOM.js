@@ -1,3 +1,4 @@
+import React from "./React.js";
 const TEXT_ELEMENT_TYPE = "TEXT_ELEMENT";
 
 function _render(vdom, container) {
@@ -9,6 +10,7 @@ function _render(vdom, container) {
 
   // 2. 处理 非 children 的 props
   Object.keys(vdom.props).forEach((key) => {
+
     if (key !== "children") {
       dom[key] = vdom.props[key];
     }
@@ -18,7 +20,9 @@ function _render(vdom, container) {
   const children = vdom.props.children;
   if (children) {
     children.forEach((child) => {
-      _render(child, dom);
+      typeof child === 'string'
+                   ? _render(React.createTextElement(child), dom) 
+                   : _render(child, dom);
     });
   }
 
