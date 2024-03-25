@@ -22,6 +22,7 @@ function createTextElement(nodeValue) {
     type: TEXT_ELEMENT_TYPE,
     props: {
       nodeValue,
+      children: []
     },
   };
 }
@@ -31,24 +32,19 @@ function createElement(type, props, ...children) {
     type,
     props: {
       ...props,
-      children,
+      children: children.map(child => {
+        return typeof child === 'string' 
+                            ? createTextElement(child)
+                            : child;
+      }),
     },
   };
 }
 
-const vText1 = createTextElement('hello-');
-const vText2 = createTextElement("mini-react");
-const vDiv = createElement(
-  "div",
-  {
-    id: "app-id",
-  },
-  vText1,
-  vText2
-);
+
 
 function render(vdom, container) {
-  console.log(vdom);
+  console.log(47, vdom);
   // 1. 创建对应真实 DOM
   const dom =
     vdom.type === TEXT_ELEMENT_TYPE
@@ -75,5 +71,14 @@ function render(vdom, container) {
 }
 
 const app = document.querySelector("#app");
+const vText1 = createTextElement('hello-');
+const vText2 = createTextElement("mini-react");
+const vDiv = createElement(
+  "div",
+  {
+    id: "app-id",
+  },
+  'mini-react'
+);
 
 render(vDiv, app);
