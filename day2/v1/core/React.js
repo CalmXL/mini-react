@@ -14,7 +14,11 @@ function createElement(type, props, ...children) {
     type,
     props: {
       ...props,
-      children,
+      children: children.map(child => {
+        return typeof child === 'string' 
+                            ? createTextElement(child)
+                            : child;
+      }),
     },
   };
 }
@@ -35,15 +39,16 @@ function createDom(type) {
 }
 
 function updateProps(fiber) {
-  Object.keys(fiber.props).forEach((key) => {
-    if (key !== "children") {
-      fiber.dom[key] = fiber.props[key];
-    }
-  });
+  fiber.props &&
+    Object.keys(fiber.props).forEach((key) => {
+      if (key !== "children") {
+        fiber.dom[key] = fiber.props[key];
+      }
+    });
 }
 
 function initChildren(fiber) {
-  const children = fiber.props.children;
+  const children = fiber.props?.children;
   let prevChild = null;
   children &&
     children.forEach((child, index) => {
@@ -65,11 +70,10 @@ function initChildren(fiber) {
 }
 
 function performWorkOfUnit(fiber) {
-  // console.log(fiber);
   // 1. create dom
-  if (!fiber.dom) {
+  if (!fiber.dom && fiber.type) {
     const dom = (fiber.dom = createDom(fiber.type));
-
+ 
     fiber.parent.dom.append(dom);
 
     // 2. handle props
@@ -96,7 +100,9 @@ function workLoop(idleDeadline) {
 
   while (!shouldYield) {
     // run task
-    nextWorkOfUnit = performWorkOfUnit(nextWorkOfUnit);
+    if (nextWorkOfUnit) {
+      nextWorkOfUnit = performWorkOfUnit(nextWorkOfUnit);
+    }
 
     shouldYield = idleDeadline.timeRemaining() < 1;
   }
