@@ -16,9 +16,8 @@ const vDiv = React.createElement(
     {
       id: "app-id",
     },
-    'hi',
+    'hi-',
     'min-react',
-
     );
 
 
