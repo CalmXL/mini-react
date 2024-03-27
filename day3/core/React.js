@@ -15,7 +15,9 @@ function createElement(type, props, ...children) {
     props: {
       ...props,
       children: children.map((child) => {
-        return typeof child === "string" ? createTextElement(child) : child;
+        const isTextNode =
+          typeof child === "string" || typeof child === "number";
+        return isTextNode ? createTextElement(child) : child;
       }),
     },
   };
@@ -47,8 +49,7 @@ function updateProps(fiber) {
     });
 }
 
-function initChildren(fiber) {
-  const children = fiber.props?.children;
+function initChildren(fiber, children) {
   let prevChild = null;
   children &&
     children.forEach((child, index) => {
@@ -69,13 +70,46 @@ function initChildren(fiber) {
     });
 }
 
-function performWorkOfUnit(fiber) {
-  if (!fiber.dom && fiber.type) {
-    const dom = (fiber.dom = createDom(fiber.type));
+function updateFunctionComponent(fiber) {
+  let children = [fiber.type(fiber.props)];
+  initChildren(fiber, children);
+}
 
+function updateHostComponent(fiber) {
+  if (!fiber.dom) {
+    fiber.dom = createDom(fiber.type);
     updateProps(fiber);
   }
-  initChildren(fiber);
+
+  let children = fiber.props?.children;
+
+  initChildren(fiber, children);
+}
+
+function performWorkOfUnit(fiber) {
+  if (!fiber) return;
+  const isFunctionComponent = typeof fiber.type === "function";
+
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber);
+  } else {
+    updateHostComponent(fiber);
+  }
+
+
+  // if (!isFunctionComponent) {
+  //   if (!fiber.dom) {
+  //     fiber.dom = createDom(fiber.type);
+  //     updateProps(fiber);
+  //   }
+  // }
+
+  // let children;
+  // children = isFunctionComponent
+  //   ? [fiber.type(fiber.props)]
+  //   : fiber.props?.children;
+
+  // initChildren(fiber, children);
 
   // 4. 返回下一个任务
   if (fiber.child) {
@@ -86,6 +120,14 @@ function performWorkOfUnit(fiber) {
     return fiber.sibling;
   }
 
+  let nextFiber = fiber;
+  while (nextFiber) {
+    if (nextFiber.sibling) {
+      return nextFiber.sibling;
+    }
+    nextFiber = nextFiber.parent;
+  }
+
   return fiber.parent?.sibling;
 }
 
@@ -93,9 +135,7 @@ let nextWorkOfUnit = null;
 let root = null;
 function workLoop(idleDeadline) {
   let shouldYield = false;
-
-  while (!shouldYield) {
-    // run task
+  while (!shouldYield && nextWorkOfUnit) {
     if (nextWorkOfUnit) {
       nextWorkOfUnit = performWorkOfUnit(nextWorkOfUnit);
     }
@@ -103,11 +143,11 @@ function workLoop(idleDeadline) {
     if (!nextWorkOfUnit) {
       commitRoot();
     }
-
     shouldYield = idleDeadline.timeRemaining() < 1;
     requestIdleCallback(workLoop);
   }
 }
+requestIdleCallback(workLoop);
 
 function commitRoot() {
   commitWork(root.child);
@@ -115,14 +155,19 @@ function commitRoot() {
 
 function commitWork(fiber) {
   if (!fiber) return;
-  fiber.parent.dom.append(fiber.dom);
+  let fiberParent = fiber.parent;
+  while (!fiberParent.dom) {
+    fiberParent = fiberParent.parent;
+  }
+  if (fiber.dom) {
+    fiberParent.dom.append(fiber.dom);
+  }
   commitWork(fiber.child);
   commitWork(fiber.sibling);
 }
 
-requestIdleCallback(workLoop);
-
 export default {
   createElement,
+  createTextElement,
   render,
 };

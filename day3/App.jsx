@@ -1,19 +1,17 @@
 import React from "./core/React.js";
 
-// function Counter () {
-//   return <div>count</div>
-// }
+function Counter({ num }) {
+  return <div>count: {num}</div>;
+}
 
-// const App = <div>
-//   hi-minireact
-//   <Counter />
-// </div>
+const App = (
+  <div class="box">
+    hi-minireact
+    <Counter num={10} />
+    <Counter num={20} />
+  </div>
+);
 
-const App = <div>
-  hi-minireact
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-</div>
+// console.log(App);
 
 export default App;
