@@ -70,13 +70,11 @@ function initChildren(fiber) {
 }
 
 function performWorkOfUnit(fiber) {
-  // 1. create dom
   if (!fiber.dom && fiber.type) {
     const dom = (fiber.dom = createDom(fiber.type));
-    // 2. handle props
+
     updateProps(fiber);
   }
-  // 3. 转换链表，设置指针
   initChildren(fiber);
 
   // 4. 返回下一个任务
@@ -103,7 +101,6 @@ function workLoop(idleDeadline) {
     }
 
     if (!nextWorkOfUnit) {
-      // 链表初始化完成
       commitRoot();
     }
 
@@ -126,7 +123,6 @@ function commitWork(fiber) {
 requestIdleCallback(workLoop);
 
 export default {
-  createTextElement,
   createElement,
   render,
 };
