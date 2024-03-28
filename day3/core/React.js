@@ -96,21 +96,6 @@ function performWorkOfUnit(fiber) {
     updateHostComponent(fiber);
   }
 
-
-  // if (!isFunctionComponent) {
-  //   if (!fiber.dom) {
-  //     fiber.dom = createDom(fiber.type);
-  //     updateProps(fiber);
-  //   }
-  // }
-
-  // let children;
-  // children = isFunctionComponent
-  //   ? [fiber.type(fiber.props)]
-  //   : fiber.props?.children;
-
-  // initChildren(fiber, children);
-
   // 4. 返回下一个任务
   if (fiber.child) {
     return fiber.child;
