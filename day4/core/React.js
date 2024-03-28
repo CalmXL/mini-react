@@ -141,6 +141,7 @@ requestIdleCallback(workLoop);
 
 function commitRoot() {
   commitWork(root.child);
+  root = null;
 }
 
 function commitWork(fiber) {
